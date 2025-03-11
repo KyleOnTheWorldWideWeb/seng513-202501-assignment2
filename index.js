@@ -1,3 +1,5 @@
+import { questionGenerator } from './questionGenerator.js';
+
 class Question {
   constructor(text, choices, answer, difficulty) {
     this.text = text;
