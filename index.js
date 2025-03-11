@@ -9,7 +9,7 @@ class Question {
   checkAnswer(choice) {
     if (choice === this.answer) {
       console.log(`Question '${this.text}' choice '${choice}' is correct`);
-      return this.getScore;
+      return this.getScore();
     } else {
       console.log(`Question '${this.text}' choice '${choice}' is wrong`);
       return -1;
@@ -52,26 +52,26 @@ class Quiz {
   }
   // TODO: Handle how we add questions in and when we want to end.
   retrieveQuestion() {
-    if (length(this.questions) != 0) {
-      const question = this.questions.back();
-      this.questions.pop();
+    if (this.questions.length !== 0) {
+      const question = this.questions[this.questions.length - 1];
+      this.questions.pop(); 
       return question;
     } else {
       return null;
     }
   }
-
   // I think this will need to be changed. Currently it updates a users score
   // then returns false if the answer was wrong and true if it was correct.
   answerQuestion(choice) {
+    const question = this.retrieveQuestion();
+    if (!question) {
+      console.log("No more questions available.");
+      return false;
+    }
     const points = question.checkAnswer(choice);
     this.score += points;
     console.log(`${this.user.name} current score is: ${this.score}`);
-    if (points == -1) {
-      return false;
-    } else {
-      return true;
-    }
+    return points !== -1;
   }
 
   finishQuiz() {
@@ -87,6 +87,6 @@ class User {
   }
 
   insertScore(points) {
-    this.scoreHistory.ins;
+    this.scoreHistory.push(points); 
   }
 }
