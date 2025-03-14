@@ -4,7 +4,7 @@
  * @param {Quiz} quiz - The current quiz instance.
  */
 
-function* questionGenerator(quiz) {
+export function* questionGenerator(quiz) {
     while (true) {
       quiz.difficultyAdjustment();
   
@@ -41,7 +41,7 @@ function* questionGenerator(quiz) {
  * @param {Quiz} quiz - The quiz instance to store new questions.
  */
 
-  async function* fetchQuestions(quiz) {
+export async function* fetchQuestions(quiz) {
     try {
       // API endpoint with dynamic difficulty
       const apiUrl = `https://opentdb.com/api.php?amount=5&difficulty=${quiz.difficulty}&type=multiple`;
@@ -69,5 +69,3 @@ function* questionGenerator(quiz) {
       console.error("Error fetching questions:", error);
     }
   }
-
-  export { questionGenerator };

@@ -42,6 +42,13 @@ h1 {
     margin-bottom: 1rem;
 }
 
+/* Main answer list element styling */
+#answer-list {
+    display: flex;
+    flex-direction: column;
+
+}
+
 /* Navigation links */
 nav a {
     display: block;
@@ -96,18 +103,18 @@ nav a:hover {
 }
 
 /* Correct Answer */
-/* .fancy-button:hover {
+.correct {
     background: linear-gradient(135deg, #9de6b9, #5bf18aea);
     box-shadow: 0 0.375rem 0.9375rem rgba(118, 246, 201, 0.886);
     transform: translateX(0.8rem);
-} */
+}
 
 /* Wrong Answer */
-/* .fancy-button:hover {
+.incorrect {
     background: linear-gradient(135deg, #dccab1, #c24040);
     box-shadow: 0 0.375rem 0.9375rem rgba(244, 110, 110, 0.997);
     transform: translateX(0.8rem);
-} */
+}
 
 
 

@@ -1,6 +1,7 @@
-import { questionGenerator } from './questionGenerator.js';
+import { questionGenerator } from './question-generator.js';
+import { User } from './user.js'; // Must import the User class so we don't get a ReferenceError at runtime
 
-class Question {
+export class Question {
   constructor(text, choices, answer, difficulty) {
     this.text = text;
     this.choices = choices;
@@ -29,7 +30,8 @@ class Question {
   }
 }
 
-class Quiz {
+
+export class Quiz {
   constructor(user) {
     this.score = 0;
     this.difficulty = "easy";
@@ -82,13 +84,5 @@ class Quiz {
   }
 }
 
-class User {
-  constructor(name, scoreHistory = []) {
-    this.name = name;
-    this.scoreHistory = scoreHistory;
-  }
 
-  insertScore(points) {
-    this.scoreHistory.push(points); 
-  }
-}
+
