@@ -36,6 +36,24 @@
         </div>
        
     </div>
+    <div class = "container" id = "setup">
+        <!-- <h2>Enter your name:</h2> -->
+        <input type = "text" id = "username" placeholder = "Enter Your Name">
+        <!-- Dropdown menu for initial question category selection -->
+        <div class = "question-category">
+            <button id = "dropdown-button">Select a category...</button>
+            <div id = "dropdown-menu" class = "dropdown-categories">
+                <!-- Difficulty is supposed to by dynamic, so each category starts at "easy" -->
+                <a href = "javascript:void(0);" data-url = "https://opentdb.com/api.php?amount=6&category=9">General Knowledge</a>
+                <a href = "javascript:void(0);" data-url = "https://opentdb.com/api.php?amount=6&category=18">Science: Computers</a>
+                <a href = "javascript:void(0);" data-url = "https://opentdb.com/api.php?amount=6&category=15">Entertainment: Video Games</a>
+                <a href = "javascript:void(0);" data-url = "https://opentdb.com/api.php?amount=6&category=11">Entertainment: Movies</a>
+                <a href = "javascript:void(0);" data-url = "https://opentdb.com/api.php?amount=6&category=28">Vehicles</a> 
+                <a href = "javascript:void(0);" data-url = "https://opentdb.com/api.php?amount=6&category=20">Mythology</a> 
+            </div>
+        </div>
+        <button id = "start-button">Begin the Quiz!</button>
+    </div>
     <div class = "container">
         <div id = "user-details"></div>
         <h2 id = "question">Loading question....</h1>
@@ -44,7 +62,8 @@
         <button id = "remove-answer">Remove Answer</button>
     </div>
 
-    <!-- Script responsible  -->
-    <script type = "module" src = "main.js"></script>  
+    <!-- Script responsible for main event handling and control flow -->
+    <script type = "module" src = "main.js"></script> 
+    <script type = "module" src = "dropdown-menu.js"></script> 
 </body>
 </html>
