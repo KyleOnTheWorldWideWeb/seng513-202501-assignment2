@@ -1,8 +1,7 @@
 import { questionGenerator } from './question-generator.js';
  // Must import the User class so we don't get a ReferenceError at runtime
 import { User } from './user.js';
-// Needed to get the API url chosen in the dropdown menu
-import { userSelectedCategoryURL } from './setup.js'; 
+
 
 
 export class Question {

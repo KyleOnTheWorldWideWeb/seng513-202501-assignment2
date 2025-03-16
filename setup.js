@@ -1,4 +1,3 @@
-import { userSelectedCategoryURL } from './setup.js'; 
 import { startQuiz } from './main.js';
 import { User } from './user.js';
 
@@ -44,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function() {
         console.log(`Starting quiz for ${userName} in category: ${userSelectedCategoryURL}`);
 
         // Create User instance
-        const user = new User(userName);
+        const user = new User(userName, []);
 
         /* Start the quiz by passing the user and selected category
         * We want to pass the url by value because the value of userSelectedCategoryURL will change if the user
