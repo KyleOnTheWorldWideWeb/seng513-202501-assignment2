@@ -28,15 +28,23 @@
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
-
+    <div class = "container" id = "welcome-header">
+        <img id = "title-img" src = "images/question_mark2.png"  width="120" height="120" alt = "Question Mark">
+        <div id = "title-text">
+            <h1> Customizable Triva Challenge:</h1>
+            <h1> SENG 513 - Assignment 2</h1>
+        </div>
+       
+    </div>
     <div class = "container">
-        <h1 id = "question"></h1>
+        <div id = "user-details"></div>
+        <h2 id = "question">Loading question....</h1>
         <ul id = "answer-list"></ul>
-        <button id="add-answer">Add Answer</button>
-        <button id="remove-answer">Remove Answer</button>
+        <button id =  "add-answer">Add Answer</button>
+        <button id = "remove-answer">Remove Answer</button>
     </div>
 
     <!-- Script responsible  -->
-    <script src = "answer-script.js"></script>  
+    <script type = "module" src = "main.js"></script>  
 </body>
 </html>

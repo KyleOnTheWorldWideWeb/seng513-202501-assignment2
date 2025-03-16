@@ -1,39 +1,47 @@
+import { Quiz, Question } from './quiz.js';
+
+
 /**
  * Generator function to manage the flow of quiz questions.
  * It dynamically adjusts difficulty and retrieves new questions if needed.
  * @param {Quiz} quiz - The current quiz instance.
  */
+// Had to change it to async because otherwise <yield* fetchQuestions(quiz)> will 
+// trigger an "Uncaught TypeError".
+export async function* questionGenerator(quiz) {
+  while (true) {
+    // Adjust the quiz difficulty (e.g., after each round or based on user performance).
+    quiz.difficultyAdjustment();
 
-export function* questionGenerator(quiz) {
-    while (true) {
-      quiz.difficultyAdjustment();
-  
-
-      if (quiz.questions.length === 0) {
-        console.log(`Fetching new ${quiz.difficulty} questions...`);
-        yield* fetchQuestions(quiz);
-      }
-  
-      
-      const question = quiz.retrieveQuestion();
-      
-      if (!question) {
-        console.log("No more questions available.");
-        return; // End the generator when all questions are exhausted
-      }
-  
-      // Yield the question to the UI for display
-      const userAnswer = yield question;
-  
-      
-      const isCorrect = quiz.answerQuestion(userAnswer);
-  
-      
-      console.log(isCorrect ? "Correct answer!" : "Wrong answer!");
-  
-      
+    // If there are no questions left in the quiz object, fetch new ones from an API.
+    if (quiz.questions.length === 0) {
+      console.log(`Fetching new ${quiz.difficulty} questions...`);
+      // yield* delegates to another generator (fetchQuestions) to get new questions.
+      yield* fetchQuestions(quiz);
     }
+
+    // Retrieve the next question from the quiz.
+    const question = quiz.retrieveQuestion();
+
+    // If no question is returned, assume we've exhausted all possibilities and exit the generator.
+    if (!question) {
+      console.log("No more questions available.");
+      return; // Ends the generator.
+    }
+
+    // Yield the question to the caller, which can pause here until the user provides an answer.
+    const userAnswer = yield question;
+
+    // Check whether the userAnswer is correct.
+    const isCorrect = quiz.answerQuestion(userAnswer);
+
+    // Yield feedback so the UI knows what happened
+    yield { question, isCorrect };
+
+    // Log the result of the user's answer.
+    console.log(isCorrect ? "Correct answer!" : "Wrong answer!");
   }
+}
 
   /**
  * Fetches new questions from the Open Trivia DB API and adds them to the quiz.
@@ -41,10 +49,10 @@ export function* questionGenerator(quiz) {
  * @param {Quiz} quiz - The quiz instance to store new questions.
  */
 
-export async function* fetchQuestions(quiz) {
+async function* fetchQuestions(quiz) {
     try {
       // API endpoint with dynamic difficulty
-      const apiUrl = `https://opentdb.com/api.php?amount=5&difficulty=${quiz.difficulty}&type=multiple`;
+      const apiUrl = `https://opentdb.com/api.php?amount=10`;
   
       
       const response = await fetch(apiUrl);
