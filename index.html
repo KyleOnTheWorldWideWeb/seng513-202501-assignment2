@@ -44,12 +44,12 @@
             <button id = "dropdown-button">Select a category...</button>
             <div id = "dropdown-menu" class = "dropdown-categories">
                 <!-- Difficulty is supposed to by dynamic, so each category starts at "easy" -->
-                <a href = "javascript:void(0);" data-url = "https://opentdb.com/api.php?amount=6&category=9">General Knowledge</a>
-                <a href = "javascript:void(0);" data-url = "https://opentdb.com/api.php?amount=6&category=18">Science: Computers</a>
-                <a href = "javascript:void(0);" data-url = "https://opentdb.com/api.php?amount=6&category=15">Entertainment: Video Games</a>
-                <a href = "javascript:void(0);" data-url = "https://opentdb.com/api.php?amount=6&category=11">Entertainment: Movies</a>
-                <a href = "javascript:void(0);" data-url = "https://opentdb.com/api.php?amount=6&category=28">Vehicles</a> 
-                <a href = "javascript:void(0);" data-url = "https://opentdb.com/api.php?amount=6&category=20">Mythology</a> 
+                <a href = "javascript:void(0);" data-url = "https://opentdb.com/api.php?amount=10&category=9&difficulty=easy&type=multiple">General Knowledge</a>
+                <a href = "javascript:void(0);" data-url = "https://opentdb.com/api.php?amount=10&category=18&difficulty=easy&type=multiple">Science: Computers</a>
+                <a href = "javascript:void(0);" data-url = "https://opentdb.com/api.php?amount=10&category=15&difficulty=easy&type=multiple">Entertainment: Video Games</a>
+                <a href = "javascript:void(0);" data-url = "https://opentdb.com/api.php?amount=10&category=11&difficulty=easy&type=multiple">Entertainment: Movies</a>
+                <a href = "javascript:void(0);" data-url = "https://opentdb.com/api.php?amount=10&category=28&difficulty=easy&type=multiple">Vehicles</a> 
+                <a href = "javascript:void(0);" data-url = "https://opentdb.com/api.php?amount=10&category=20&difficulty=easy&type=multiple">Mythology</a> 
             </div>
         </div>
         <button id = "start-button">Begin the Quiz!</button>
@@ -64,6 +64,6 @@
 
     <!-- Script responsible for main event handling and control flow -->
     <script type = "module" src = "main.js"></script> 
-    <script type = "module" src = "dropdown-menu.js"></script> 
+    <script type = "module" src = "setup.js"></script> 
 </body>
 </html>

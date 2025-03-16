@@ -1,5 +1,9 @@
 import { questionGenerator } from './question-generator.js';
-import { User } from './user.js'; // Must import the User class so we don't get a ReferenceError at runtime
+ // Must import the User class so we don't get a ReferenceError at runtime
+import { User } from './user.js';
+// Needed to get the API url chosen in the dropdown menu
+import { userSelectedCategoryURL } from './setup.js'; 
+
 
 export class Question {
   constructor(text, choices, answer, difficulty) {
@@ -30,26 +34,37 @@ export class Question {
   }
 }
 
-
 export class Quiz {
-  constructor(user) {
+  constructor(user, apiURL) {
+    // Users can select a category from the dropdown menu
+    // The selected category URL is passed to the Quiz constructor
+    this.apiURL = userSelectedCategoryURL;
     this.score = 0;
-    this.difficulty = "easy";
+    this.difficulty = "easy"; 
     this.questions = [];
     this.user = user;
   }
 
   difficultyAdjustment() {
+    let newDifficulty;
+
     if (this.score < 10) {
-      this.difficulty = "easy";
+      newDifficulty = "easy";
     } else if (this.score >= 10 && this.score < 20) {
-      this.difficulty = "medium";
+      newDifficulty = "medium";
     } else {
-      this.difficulty = "hard";
+      newDifficulty = "hard";
     }
+    // Update the difficulty level of the quiz object
+    this.difficulty = newDifficulty;
+    // Update the API URL with the new difficulty using regex
+    this.apiURL = this.apiURL.replace(/difficulty=\w+/, `difficulty=${newDifficulty}`);
+
+    console.log(`Updated Difficulty: ${this.difficulty}`);
+    console.log(`Updated API URL: ${this.apiURL}`);
   }
   // TODO: Handle adding of questions from the api call to the url:
-  // - `https://opentdb.com/api.php?amount=${amount}&difficulty=${difficulty}`;
+  // 
 
   addQuestion(question) {
     this.questions.push(question);

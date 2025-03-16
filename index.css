@@ -55,11 +55,11 @@ h1, h2 {
     display: inline-block;
 }
 
-h1:hover, h2:hover {
-    text-shadow: 0 0 12px rgba(173, 216, 230, 0.8); /* Light blue glow */
+/* h1:hover, h2:hover {
+    text-shadow: 0 0 12px rgba(173, 216, 230, 0.8); 
     transform: scale(1.02);
     transition: all 0.3s ease-in-out;
-}
+} */
 
 h1, h2 {
     background: rgb(204, 226, 249);
@@ -110,6 +110,7 @@ h1, h2 {
     justify-content: space-evenly;
     align-items: center;
     gap: 1.5rem;
+    font-size: clamp(0.8rem, 1vw, 1.5rem); /* Ensure all dropdown font is the same and scales dynamically */
 }
 
 #username {
@@ -139,6 +140,9 @@ h1, h2 {
     align-items: center; /* Ensures button stays centered */
 }
 
+
+
+
 #dropdown-button {
     width: 80%; /* Makes the button fill its parent */
     max-width: clamp(15rem, 60vw, 37.5rem);
@@ -151,13 +155,14 @@ h1, h2 {
     transition: background 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
+
 #dropdown-menu {
     display: none;
     position: absolute;
     top: 100%;
     left: 50%;
     transform: translateX(-50%); /* Centers dropdown under button */
-    width: 100%;
+    width: 80%;
     max-width: clamp(15rem, 60vw, 37.5rem);
     background: white;
     border: 1px solid #ddd;
@@ -199,8 +204,13 @@ h1, h2 {
 }
 
 #start-button:hover {
-    background: #8bc9f6;
+    text-shadow: 0 0 12px rgb(255, 0, 0); /* Light blue glow */
+    transform: scale(1.02);
+    transition: all 0.3s ease-in-out;
+    
 }
+
+
 #start-button:active {
     background: hsl(165, 100%, 32%);
 }

@@ -4,6 +4,7 @@ import { Quiz, Question } from "./quiz.js";
 import { questionGenerator } from "./question-generator.js"; 
 
 // Grab references to HTML elements (adjust IDs if needed)
+
 const questionElem = document.getElementById("question");
 const answerListElem = document.getElementById("answer-list");
 
@@ -11,7 +12,8 @@ const answerListElem = document.getElementById("answer-list");
 let nextButton = null;
 
 // Create a user and a quiz
-const user = new User("Elon Muskrat");
+const username = document.getElementById("username").value;
+const user = new User(username);
 const quiz = new Quiz(user);
 
 // Create our question generator

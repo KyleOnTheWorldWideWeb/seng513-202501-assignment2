@@ -1,5 +1,6 @@
-/** Adds event listeners to the dropbdown-button and each dropdown-category.  */
+
 document.addEventListener("DOMContentLoaded", function() {
+
     // Click event on the <dropdown-button> element calls function causing all categories to "show" on screen.
     document.getElementById("dropdown-button").addEventListener("click", toggleDropdownMenu);
     
@@ -10,28 +11,51 @@ document.addEventListener("DOMContentLoaded", function() {
             setQuizCategory(this.getAttribute("data-url"));
         });
 
-    }) // end of query
+    }) 
+
+    const userNameInput = document.getElementById("username");
+    const startButton = document.getElementById("start-button");
+
+    startButton.addEventListener("click", function () {
+        const userName = userNameInput.value.trim();
+
+        if (userName === "") {
+            alert("Please enter your name to start the quiz.");
+            return;
+        }
+
+        if (!userSelectedCategoryURL) {
+            alert("Please select a quiz category.");
+            return;
+        }
+
+        console.log(`Starting quiz for ${userName} in category: ${userSelectedCategoryURL}`);
+
+        // Create User instance
+        const user = new User(userName);
+
+        // Start the quiz by passing the user and selected category
+        startQuiz(user, userSelectedCategoryURL);
+    });
 }); // end of <DOMContentLoaded> event listener
 
-// For storing the quiz category the user has selected.
-let userSelectedCategoryURL = "";
+/* For storing the quiz category the user has selected.
+*  Exporting it will allow an module that imports it to access the value.
+*  Using modules in this way is known as "live binding" - any changes to 
+*  the value in one module will be reflected in any other module that imports it.
+*/
+export let userSelectedCategoryURL = "";
 
-/**  */
 function setQuizCategory(url) {
     userSelectedCategoryURL = url;
     console.log("Selected Quiz API URL:", userSelectedCategoryURL);
+    // Display the selected category in the dropdown button
+    document.getElementById("dropdown-button").textContent = document.querySelector(`a[data-url="${url}"]`).textContent;
     // Hide dropdown after selecting
     document.getElementById("dropdown-menu").classList.remove("show");
 }
 
-function toggleDropdownMenu() {
-    // console.log("Dropdown button clicked!");
-    // let menu = document.getElementById("dropdown-menu");
-    // console.log("Menu:", menu);
-    // console.log("Before Toggle:", menu.classList); // Check existing classes
-    // menu.classList.toggle("show");
-    // console.log("After Toggle:", menu.classList); // Should include "show"
-    
+export function toggleDropdownMenu() {
     // Adds the <show> class to the <dropdown-menu> HTML element
     // CSS styling for the <show> class is set to <block> so that the content will appear on screen.
     document.getElementById("dropdown-menu").classList.toggle("show");
