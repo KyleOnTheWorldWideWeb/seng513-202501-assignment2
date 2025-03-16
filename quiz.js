@@ -38,7 +38,7 @@ export class Quiz {
   constructor(user, apiURL) {
     // Users can select a category from the dropdown menu
     // The selected category URL is passed to the Quiz constructor
-    this.apiURL = userSelectedCategoryURL;
+    this.apiURL = apiURL;
     this.score = 0;
     this.difficulty = "easy"; 
     this.questions = [];

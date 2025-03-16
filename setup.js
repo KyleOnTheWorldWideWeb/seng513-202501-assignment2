@@ -1,3 +1,15 @@
+import { userSelectedCategoryURL } from './setup.js'; 
+import { startQuiz } from './main.js';
+import { User } from './user.js';
+
+
+
+/* For storing the quiz category the user has selected.
+*  Exporting it will allow an module that imports it to access the value.
+*  Using modules in this way is known as "live binding" - any changes to 
+*  the value in one module will be reflected in any other module that imports it.
+*/
+let userSelectedCategoryURL = "";
 
 document.addEventListener("DOMContentLoaded", function() {
 
@@ -34,17 +46,15 @@ document.addEventListener("DOMContentLoaded", function() {
         // Create User instance
         const user = new User(userName);
 
-        // Start the quiz by passing the user and selected category
+        /* Start the quiz by passing the user and selected category
+        * We want to pass the url by value because the value of userSelectedCategoryURL will change if the user
+        * selects a different category using the dropdown menu. This would be BAD if it happened mid quiz because
+        * the quiz would then be based on a different category than the one the user started with.
+        */
         startQuiz(user, userSelectedCategoryURL);
     });
 }); // end of <DOMContentLoaded> event listener
 
-/* For storing the quiz category the user has selected.
-*  Exporting it will allow an module that imports it to access the value.
-*  Using modules in this way is known as "live binding" - any changes to 
-*  the value in one module will be reflected in any other module that imports it.
-*/
-export let userSelectedCategoryURL = "";
 
 function setQuizCategory(url) {
     userSelectedCategoryURL = url;
@@ -55,31 +65,11 @@ function setQuizCategory(url) {
     document.getElementById("dropdown-menu").classList.remove("show");
 }
 
-export function toggleDropdownMenu() {
+function toggleDropdownMenu() {
     // Adds the <show> class to the <dropdown-menu> HTML element
     // CSS styling for the <show> class is set to <block> so that the content will appear on screen.
     document.getElementById("dropdown-menu").classList.toggle("show");
 }
 
 
-
-// Hides the dropdown menu when the user selects a category or clicks outside the initial menu bar.
-// window.onclick = function(event) {
-//     // Triggers if the user clicks anywhere other than droppdown button.
-//     if (!event.target.matches('.dropdown-button')) {
-//         let dropdownMenu = document.getElementById("dropdown-menu");
-//         if (dropdownMenu.classList.contains("show")) {
-//             dropdownMenu.classList.remove("show");
-//         }
-//         // let dropdownCategories = document.getElementsByClassName("dropdown-categories");
-//         // // Iterate through each quiz category element
-//         // for (let i = 0; i < dropdownCategories.length; i++) {
-//         //     // Check to see if the element contains the <show> class (i.e. it is shown on screen)
-//         //     if (dropdownCategories[i].classList.contains("show")) {
-//         //         // Removes the <show> class - i.e. "hides" the element
-//         //         dropdownCategories[i].classList.remove("show");
-//         //     }
-//         // }
-//     }
-// }
 

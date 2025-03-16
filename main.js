@@ -11,10 +11,17 @@ const answerListElem = document.getElementById("answer-list");
 // We'll add a "Next Question" button to let the user see feedback first
 let nextButton = null;
 
-// Create a user and a quiz
-const username = document.getElementById("username").value;
-const user = new User(username);
-const quiz = new Quiz(user);
+import { Quiz } from './quiz.js';
+
+export function startQuiz(user, categoryURL) {
+    console.log(`Initializing quiz for ${user.name} with API: ${categoryURL}`);
+    
+    // Create a new Quiz instance
+    const quiz = new Quiz(user, categoryURL);
+
+    // TODO: Load first question and begin quiz logic
+    console.log("Quiz has started!");
+}
 
 // Create our question generator
 const gen = questionGenerator(quiz);
