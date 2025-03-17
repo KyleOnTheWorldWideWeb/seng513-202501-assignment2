@@ -35,10 +35,8 @@ export function startQuiz(user, categoryURL) {
     console.log("Quiz has started!");
     
     // Display the first question by triggering the generator's first yield
-    displayNextQuestion(gen.next());  
+    displayNextQuestion();  
 }
-
-
 
 
 /**
@@ -47,8 +45,8 @@ export function startQuiz(user, categoryURL) {
  *  - If done, quiz is finished
  *  - Otherwise, render it
  */
-function displayNextQuestion() {
-  const { value, done } = gen.next();
+async function displayNextQuestion() {
+  const { value, done } = await gen.next();
 
   // If the generator is done or didn't yield a valid question
   if (done || !value) {
