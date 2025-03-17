@@ -30,8 +30,8 @@ export function startQuiz(user, categoryURL) {
     console.log("Quiz has started!");
 }
 
-// // Create our question generator
-// const gen = questionGenerator(quiz);
+// Create our question generator
+const gen = questionGenerator(quiz);
 
 // // Track the current question object separately
 // let currentQuestion = null;

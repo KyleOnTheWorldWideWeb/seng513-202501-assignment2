@@ -52,7 +52,12 @@ export async function* questionGenerator(quiz) {
 async function* fetchQuestions(quiz) {
     try {
       // API endpoint with dynamic difficulty
-      const apiUrl = `https://opentdb.com/api.php?amount=10`;
+      //const apiUrl = `https://opentdb.com/api.php?amount=10`;
+
+      // ^^^ huh? There is no such thing in the API.
+      // We have to change the difficulty level manually by changing the URL.
+      // Which I have added to the Quiz object.
+      
   
       
       const response = await fetch(apiUrl);
