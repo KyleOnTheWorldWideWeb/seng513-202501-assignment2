@@ -1,4 +1,4 @@
-import { Quiz, Question } from './quiz.js';
+import { Quiz, Question } from '../models/quiz.js';
 
 
 /**
@@ -10,36 +10,46 @@ import { Quiz, Question } from './quiz.js';
 // trigger an "Uncaught TypeError".
 export async function* questionGenerator(quiz) {
   while (true) {
-    // Adjust the quiz difficulty (e.g., after each round or based on user performance).
-    quiz.difficultyAdjustment();
+    try {
+      // Adjust the quiz difficulty (e.g., after each round or based on user performance).
+      quiz.difficultyAdjustment();
 
-    // If there are no questions left in the quiz object, fetch new ones from an API.
-    if (quiz.questions.length === 0) {
-      console.log(`Fetching new ${quiz.difficulty} questions...`);
-      // yield* delegates to another generator (fetchQuestions) to get new questions.
-      yield* fetchQuestions(quiz);
+      // If there are no questions left in the quiz object, fetch new ones from an API.
+      if (quiz.questions.length === 0) {
+        console.log(`Fetching new ${quiz.difficulty} questions...`);
+        // yield* delegates to another generator (fetchQuestions) to get new questions.
+        yield* fetchQuestions(quiz);
+      }
+
+      // Retrieve the next question from the quiz.
+      const question = quiz.retrieveQuestion();
+
+      // If no question is returned, assume we've exhausted all possibilities and exit the generator.
+      if (!question) {
+        console.log("No more questions available.");
+        return; // Ends the generator.
+      }
+
+      // Yield the question to the caller, which can pause here until the user provides an answer.
+      const userAnswer = yield question;
+
+      if (!userAnswer) {
+        console.error("No answer received from user");
+        continue;
+      }
+
+      // Check whether the userAnswer is correct and get feedback
+      const result = quiz.answerQuestion(userAnswer);
+
+      // Yield feedback so the UI knows what happened
+      yield result;
+
+      // Log the result of the user's answer.
+      console.log(result.isCorrect ? "Correct answer!" : "Wrong answer!");
+    } catch (error) {
+      console.error("Error in question generator:", error);
+      yield { isCorrect: false, feedback: "An error occurred while processing your answer." };
     }
-
-    // Retrieve the next question from the quiz.
-    const question = quiz.retrieveQuestion();
-
-    // If no question is returned, assume we've exhausted all possibilities and exit the generator.
-    if (!question) {
-      console.log("No more questions available.");
-      return; // Ends the generator.
-    }
-
-    // Yield the question to the caller, which can pause here until the user provides an answer.
-    const userAnswer = yield question;
-
-    // Check whether the userAnswer is correct.
-    const isCorrect = quiz.answerQuestion(userAnswer);
-
-    // Yield feedback so the UI knows what happened
-    yield { question, isCorrect };
-
-    // Log the result of the user's answer.
-    console.log(isCorrect ? "Correct answer!" : "Wrong answer!");
   }
 }
 

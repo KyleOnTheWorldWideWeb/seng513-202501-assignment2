@@ -1,9 +1,3 @@
-import { questionGenerator } from './question-generator.js';
- // Must import the User class so we don't get a ReferenceError at runtime
-import { User } from './user.js';
-
-
-
 export class Question {
   constructor(text, choices, answer, difficulty) {
     this.text = text;
@@ -13,13 +7,16 @@ export class Question {
   }
   // We should consider using addEventListener for each question.
   checkAnswer(choice) {
-    if (choice === this.answer) {
-      console.log(`Question '${this.text}' choice '${choice}' is correct`);
-      return this.getScore();
-    } else {
-      console.log(`Question '${this.text}' choice '${choice}' is wrong`);
-      return -1;
-    }
+    const isCorrect = choice === this.answer;
+    const feedback = isCorrect ? 
+      `Correct! Well done!` : 
+      `Incorrect. The correct answer was: ${this.answer}`;
+    
+    return {
+      isCorrect,
+      feedback,
+      score: isCorrect ? this.getScore() : -1
+    };
   }
   getScore() {
     switch (this.difficulty) {
@@ -86,12 +83,13 @@ export class Quiz {
     const question = this.retrieveQuestion();
     if (!question) {
       console.log("No more questions available.");
-      return false;
+      return { isCorrect: false, feedback: "Quiz completed" };
     }
-    const points = question.checkAnswer(choice);
-    this.score += points;
+    
+    const result = question.checkAnswer(choice);
+    this.score += result.score;
     console.log(`${this.user.name} current score is: ${this.score}`);
-    return points !== -1;
+    return result;
   }
 
   finishQuiz() {

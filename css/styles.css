@@ -1,0 +1,221 @@
+/* Body background */
+body {
+    background-image: url('../images/Snow-scene.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+    margin: 0;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  /* Container styles */
+  .container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: rgba(40, 60, 80, 0.9); /* Dark grey/blue with opacity */
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    box-sizing: border-box;
+    backdrop-filter: blur(5px);
+  }
+  /* Rounded rectangle container */
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 0 1.25em rgba(0, 0, 0, 0.3);
+}
+  
+  /* Quiz container styles */
+  #quiz-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    box-sizing: border-box;
+    backdrop-filter: blur(5px);
+  }
+  
+  /* Question text styles */
+  #question {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin-bottom: 2rem;
+    line-height: 1.4;
+    font-weight: 500;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+  
+  /* Answer list styles */
+  #answer-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  /* Answer button styles */
+  #answer-list button {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    margin: 0;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #ffffff;
+    color: #2c3e50;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  /* Hover effect for answer buttons */
+  #answer-list button:hover:not(:disabled) {
+    background-color: #f8f9fa;
+    border-color: #2196F3;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Disabled state for answer buttons */
+  #answer-list button:disabled {
+    cursor: not-allowed;
+    opacity: 0.8;
+  }
+  
+  /* Correct answer styles */
+  #answer-list button.correct {
+    background-color: #4CAF50;
+    color: white;
+    border-color: #45a049;
+    animation: correctAnswer 0.5s ease;
+  }
+  
+  /* Incorrect answer styles */
+  #answer-list button.incorrect {
+    background-color: #f44336;
+    color: white;
+    border-color: #da190b;
+    animation: incorrectAnswer 0.5s ease;
+  }
+  
+  /* Feedback message styles */
+  .feedback {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
+    animation: fadeIn 0.3s ease;
+  }
+  
+  .correct-feedback {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
+  }
+  
+  .incorrect-feedback {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ef9a9a;
+  }
+  
+  /* Next button styles */
+  .next-button {
+    display: block;
+    width: 100%;
+    padding: 1rem;
+    margin-top: 1.5rem;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  
+  .next-button:hover {
+    background-color: #1976D2;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Animations */
+  @keyframes correctAnswer {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.02);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  
+  @keyframes incorrectAnswer {
+    0% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-5px);
+    }
+    75% {
+      transform: translateX(5px);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Reset button styles */
+  button[type="button"] {
+    padding: 0.8rem 1.5rem;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+  }
+  
+  button[type="button"]:hover {
+    background-color: #d32f2f;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  } 

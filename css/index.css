@@ -25,19 +25,7 @@ body {
     gap: 1rem;
 }
 
-/* Rounded rectangle container */
-.container {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    align-items: center;
-    background: rgba(40, 60, 80, 0.9); /* Dark grey/blue with opacity */
-    padding: 2rem;
-    border-radius: 1rem;
-    box-shadow: 0 0 1.25em rgba(0, 0, 0, 0.3);
-    width: 90%; /* Default width for smaller screens */
-    max-width: 400px; /* Base size for mobile */
-}
+
 
 #welcome-header {
     display: flex;

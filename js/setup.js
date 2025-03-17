@@ -1,5 +1,5 @@
-import { startQuiz } from './main.js';
-import { User } from './user.js';
+import { User } from "./models/user.js";
+import { startQuiz } from "./main.js";
 
 
 

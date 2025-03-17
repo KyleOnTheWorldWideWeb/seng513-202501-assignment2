@@ -1,7 +1,6 @@
-import { User } from "./user.js";
-import { Quiz, Question } from "./quiz.js";
-// Assign all functions defined in questionGenerator.js to the QuestionGenerator (QG) namespace
-import { questionGenerator } from "./question-generator.js";
+import { User } from "./models/user.js";
+import { Quiz, Question } from "./models/quiz.js";
+import { questionGenerator } from "./services/question-generator.js";
 
 // Grab references to HTML elements (adjust IDs if needed)
 
@@ -76,8 +75,16 @@ async function displayNextQuestion() {
  *  - Creates clickable buttons for each choice
  */
 function renderQuestion(question) {
+  // Decode HTML entities in the question text
+  const decodedText = question.text
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&shy;/g, '-');
+
   // Show question text
-  questionElem.textContent = question.text;
+  questionElem.textContent = decodedText;
 
   // Clear existing answers in the list
   answerListElem.innerHTML = "";
@@ -86,9 +93,15 @@ function renderQuestion(question) {
   question.choices.forEach((choice) => {
     const li = document.createElement("li");
     const btn = document.createElement("button");
-    btn.textContent = choice;
+    // Decode HTML entities in choices as well
+    btn.textContent = choice
+      .replace(/&quot;/g, '"')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&shy;/g, '-');
 
-    btn.setAttribute("data-answer", question.answer); // Store the correct answer
+    btn.setAttribute("data-answer", question.answer);
 
     // On click, we pass the chosen answer to handleAnswer
     btn.addEventListener("click", () => handleAnswer(choice, btn, question));
@@ -98,62 +111,73 @@ function renderQuestion(question) {
   });
 }
 
-// /**
-//  * Called when the user selects an answer:
-//  * 1. Resume the generator with user’s choice -> gen.next(choice).
-//  * 2. The generator yields an object: { question, isCorrect }.
-//  * 3. We highlight buttons and show feedback.
-//  */
-function handleAnswer(choice, clickedButton, question) {
+/**
+ * Called when the user selects an answer:
+ * 1. Disable all buttons to prevent multiple answers
+ * 2. Resume the generator with user's choice -> gen.next(choice).
+ * 3. The generator yields an object: { question, isCorrect, feedback }.
+ * 4. We highlight buttons and show feedback.
+ */
+async function handleAnswer(choice, clickedButton, question) {
   console.log("Answer clicked:", choice);
-  // Resume generator to check correctness (this yields { question, isCorrect })
-  const { value, done } = gen.next(choice);
+  
+  // Disable all buttons to prevent multiple answers
+  const buttons = answerListElem.querySelectorAll("button");
+  buttons.forEach(btn => btn.disabled = true);
+  
+  try {
+    // Resume generator to check correctness
+    const { value, done } = await gen.next(choice);
 
-  if (done) {
-    // Generator has ended — no more questions
-    displayFinishedState();
-    return;
+    if (done) {
+      displayFinishedState();
+      return;
+    }
+
+    if (!value) {
+      console.error("No feedback received from generator");
+      return;
+    }
+
+    const { isCorrect, feedback } = value;
+
+    // Highlight the correct / incorrect button(s)
+    highlightAnswers(isCorrect, question, clickedButton);
+
+    // Show feedback message
+    const msg = document.createElement("p");
+    msg.textContent = feedback;
+    msg.className = isCorrect ? "feedback correct-feedback" : "feedback incorrect-feedback";
+    answerListElem.appendChild(msg);
+
+    // Show the "Next Question" button
+    showNextButton();
+  } catch (error) {
+    console.error("Error handling answer:", error);
+    // Re-enable buttons in case of error
+    buttons.forEach(btn => btn.disabled = false);
   }
-
-  console.log("Answer clicked:", value);
-
-  // value should be { question, isCorrect }
-  const { isCorrect } = value;
-
-  // Highlight the correct / incorrect button(s)
-  highlightAnswers(isCorrect, question, clickedButton);
-
-  // Show a message on the page about correctness
-  const msg = document.createElement("p");
-  if (isCorrect) {
-    msg.textContent = "You're correct!";
-  } else {
-    msg.textContent = "Sorry, you chose the wrong answer.";
-  }
-  answerListElem.appendChild(msg);
-
-  // Now show the "Next Question" button (if not already there)
-  // so the user can proceed at their own pace.
-  showNextButton();
 }
 
-// /**
-//  * highlightAnswers:
-//  *  - If correct, apply .correct to the clicked button
-//  *  - If incorrect, apply .incorrect to the clicked button AND
-//  *    apply .correct to the button that actually has the question's correct answer
-//  */
+/**
+ * highlightAnswers:
+ *  - If correct, apply .correct to the clicked button
+ *  - If incorrect, apply .incorrect to the clicked button AND
+ *    apply .correct to the button that actually has the question's correct answer
+ */
 function highlightAnswers(isCorrect, question, clickedButton) {
+  // Remove any existing highlights
+  const buttons = answerListElem.querySelectorAll("button");
+  buttons.forEach(btn => {
+    btn.classList.remove("correct", "incorrect");
+  });
+
   if (isCorrect) {
-    // Mark the clicked button as correct
     clickedButton.classList.add("correct");
   } else {
-    // Mark the clicked button as incorrect
     clickedButton.classList.add("incorrect");
-
-    // Also highlight the correct answer
-    // We can find the correct button by scanning answerListElem
-    const buttons = answerListElem.querySelectorAll("button");
+    
+    // Highlight the correct answer
     buttons.forEach((btn) => {
       if (btn.textContent === question.answer) {
         btn.classList.add("correct");
@@ -162,33 +186,38 @@ function highlightAnswers(isCorrect, question, clickedButton) {
   }
 }
 
-// /**
-//  * Shows a "Next Question" button so the user can proceed after seeing
-//  * feedback on their answer in the form of highlighted (red/green) answers.
-//  */
+/**
+ * Shows a "Next Question" button so the user can proceed after seeing
+ * feedback on their answer in the form of highlighted (red/green) answers.
+ */
 function showNextButton() {
   if (!nextButton) {
     nextButton = document.createElement("button");
     nextButton.textContent = "Next Question";
-    nextButton.addEventListener("click", displayNextQuestion);
+    nextButton.className = "next-button";
+    nextButton.addEventListener("click", () => {
+      // Remove feedback message
+      const feedback = answerListElem.querySelector(".feedback");
+      if (feedback) feedback.remove();
+      
+      // Re-enable all buttons
+      const buttons = answerListElem.querySelectorAll("button");
+      buttons.forEach(btn => btn.disabled = false);
+      
+      // Hide next button
+      nextButton.style.display = "none";
+      
+      // Display next question
+      displayNextQuestion();
+    });
     answerListElem.appendChild(nextButton);
-  } else {
-    nextButton.style.display = "inline-block";
   }
+  nextButton.style.display = "block";
 }
 
-// /**
-//  * Hide the Next button every time a new question is displayed.
-//  */
-// function hideNextButton() {
-//   if (nextButton) {
-//     nextButton.style.display = "none";
-//   }
-// }
-
-// /**
-//  * Display a "quiz finished" message when the generator is done.
-//  */
+/**
+ * Display a "quiz finished" message when the generator is done.
+ */
 function displayFinishedState() {
   questionElem.textContent = "Quiz finished!";
   answerListElem.innerHTML = "";
