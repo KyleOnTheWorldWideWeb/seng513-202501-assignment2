@@ -17,50 +17,78 @@ let quiz = null;
 // Global variable to track the quiz session
 let quizSession = false;
 
+let gen = null;
+
 export function startQuiz(user, categoryURL) {
     console.log(`Initializing quiz for ${user.name} with API: ${categoryURL}`);
     
     // Create a new Quiz instance
     quiz = new Quiz(user, categoryURL);
 
+    // Create a generator to manage the flow of quiz questions
+    gen = questionGenerator(quiz);
+
     // TODO: Load first question and begin quiz logic
 
     // Start the quiz
     quizSession = true;
     console.log("Quiz has started!");
+    
+    // Display the first question by triggering the generator's first yield
+    displayNextQuestion(gen.next());  
 }
 
-// Create our question generator
-const gen = questionGenerator(quiz);
 
-// // Track the current question object separately
-// let currentQuestion = null;
 
-// /**
-//  * Renders a question onto the page:
-//  *  - Displays the question text
-//  *  - Creates clickable buttons for each choice
-//  */
-// function renderQuestion(question) {
-//   // Show question text
-//   questionElem.textContent = question.text;
 
-//   // Clear existing answers in the list
-//   answerListElem.innerHTML = "";
+/**
+ * displayNextQuestion:
+ *  - The generator's next yield is a question object
+ *  - If done, quiz is finished
+ *  - Otherwise, render it
+ */
+function displayNextQuestion() {
+  const { value, done } = gen.next();
 
-//   // Create a button for each choice
-//   question.choices.forEach((choice) => {
-//     const li = document.createElement("li");
-//     const btn = document.createElement("button");
-//     btn.textContent = choice;
+  // If the generator is done or didn't yield a valid question
+  if (done || !value) {
+    questionElem.textContent = "No more questions!";
+    answerListElem.innerHTML = "";
+    return;
+  }
+
+  // If the generator yields { question, isCorrect },
+  // we need to do renderQuestion(value.question) instead to show the
+  // correct answer, score, etc.
+  renderQuestion(value);
+}
+
+
+/**
+ * Renders a question onto the page:
+ *  - Displays the question text
+ *  - Creates clickable buttons for each choice
+ */
+function renderQuestion(question) {
+  // Show question text
+  questionElem.textContent = question.text;
+
+  // Clear existing answers in the list
+  answerListElem.innerHTML = "";
+
+  // Create a button for each choice
+  question.choices.forEach((choice) => {
+    const li = document.createElement("li");
+    const btn = document.createElement("button");
+    btn.textContent = choice;
     
-//     // On click, we pass the chosen answer to handleAnswer
-//     btn.addEventListener("click", () => handleAnswer(choice, btn, question));
+    // On click, we pass the chosen answer to handleAnswer
+    btn.addEventListener("click", () => handleAnswer(choice, btn, question));
     
-//     li.appendChild(btn);
-//     answerListElem.appendChild(li);
-//   });
-// }
+    li.appendChild(btn);
+    answerListElem.appendChild(li);
+  });
+}
 
 // /**
 //  * Called when the user selects an answer:
@@ -147,28 +175,6 @@ const gen = questionGenerator(quiz);
 //   }
 // }
 
-// /**
-//  * displayNextQuestion:
-//  *  - The generator's next yield is a question object
-//  *  - If done, quiz is finished
-//  *  - Otherwise, render it
-//  */
-// function displayNextQuestion() {
-//     const { value, done } = gen.next();
-  
-//     // If the generator is done or didn't yield a valid question
-//     if (done || !value) {
-//       questionElem.textContent = "No more questions!";
-//       answerListElem.innerHTML = "";
-//       return;
-//     }
-  
-//     // If the generator yields { question, isCorrect },
-//     // we need to do renderQuestion(value.question) instead to show the
-//     // correct answer, score, etc.
-//     renderQuestion(value);
-//   }
-  
 
 // /**
 //  * Display a "quiz finished" message when the generator is done.

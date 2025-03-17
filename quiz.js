@@ -62,12 +62,14 @@ export class Quiz {
     console.log(`Updated Difficulty: ${this.difficulty}`);
     console.log(`Updated API URL: ${this.apiURL}`);
   }
+
   // TODO: Handle adding of questions from the api call to the url:
-  // 
+  // huh? I thought question generation was handled by the question generator. 
 
   addQuestion(question) {
     this.questions.push(question);
   }
+  
   // TODO: Handle how we add questions in and when we want to end.
   retrieveQuestion() {
     if (this.questions.length !== 0) {

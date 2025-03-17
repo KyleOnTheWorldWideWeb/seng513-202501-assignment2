@@ -57,12 +57,15 @@ async function* fetchQuestions(quiz) {
       // ^^^ huh? There is no such thing in the API.
       // We have to change the difficulty level manually by changing the URL.
       // Which I have added to the Quiz object.
+       
       
-  
-      
-      const response = await fetch(apiUrl);
+      const response = await fetch(quiz.apiURL);
       const data = await response.json();
   
+      // Added error handling for API response codes
+      if (data.response_code !== 0) {
+        throw new Error(`API Error: Response Code ${data.response_code}`);
+      }
       
       for (let item of data.results) {
         const formattedQuestion = new Question(
@@ -77,6 +80,7 @@ async function* fetchQuestions(quiz) {
   
         
         yield formattedQuestion;
+        console.log("Question added to quiz: ", formattedQuestion);
       }
     } catch (error) {
       console.error("Error fetching questions:", error);
