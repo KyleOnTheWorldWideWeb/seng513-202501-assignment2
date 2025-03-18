@@ -7,59 +7,108 @@ import { Question } from '../models/question.js';
  * @param {Quiz} quiz - The current quiz instance.
  */
 export async function* questionGenerator(quiz) {
-
   let correctAnswers = 0;
+  let totalQuestionsAsked = 0;
 
-  while (correctAnswers < 7) {
-    try {
-      // Adjust the quiz difficulty based on the score
-      quiz.difficultyAdjustment();
+  console.log("Quiz started. Fetching questions...");
 
-      // If no questions exist, fetch new ones
-      if (quiz.questions.length === 0) {
-        console.log(`Fetching new ${quiz.difficulty} questions...`);
+  while (true) {  // Infinite loop, will exit only when needed
+      try {
+          console.log(`--- NEW LOOP ITERATION ---`);
+          console.log(`Current Correct Answers: ${correctAnswers}`);
+
+          // Fetch new questions if needed
+          if (quiz.questions.length === 0) {
+              console.log(`Fetching new ${quiz.difficulty} questions...`);
+              
+              for await (const question of fetchQuestions(quiz)) {
+                  console.log("Yielding fetched question:", question.text);
+                  const userAnswer = yield { type: "question", question };
+                  totalQuestionsAsked++;
+
+                  if (!userAnswer) {
+                      console.error("No answer received from user");
+                      continue;
+                  }
+
+                  console.log("User answered:", userAnswer);
+                  const result = quiz.answerQuestion(userAnswer);
+                  console.log("Answer result:", result);
+
+                  yield { type: "feedback", ...result };
+
+                  if (result.isCorrect) {
+                      correctAnswers++;
+                  }
+
+                  console.log(`Correct Answers: ${correctAnswers} / 7`);
+
+                  if (correctAnswers >= 7) {
+                      console.log("Generator ending: Quiz Completed!");
+                      yield { type: "completion", message: "Quiz Completed!" };
+                      return;
+                  }
+              }
+          }
+
+          // Fetch next question
+          const question = quiz.getNextQuestion();
+          
+          if (!question) {
+            console.log("No more questions available, fetching more...");
+            yield { type: "feedback", isCorrect: false, feedback: "No more questions. Fetching more..." };
         
-        // Corrected: Await questions properly before proceeding
-        for await (const question of fetchQuestions(quiz)) {
-          yield question; // Yield each fetched question
+            // Trigger new API fetch if questions run out
+            for await (const newQuestion of fetchQuestions(quiz)) {
+                console.log("Fetched new question:", newQuestion.text);
+                quiz.currentQuestion = newQuestion;
+
+                yield { type: "question", question: newQuestion };
+                return;
+            }
+
+            console.log("No new questions fetched. Ending quiz.");
+            yield { type: "completion", message: "Quiz Completed!" };
+            return;
         }
 
-        if (quiz.questions.length === 0) {
-          console.log("Failed to fetch new questions.");
-          return; // Stop the generator if no questions were added
-        }
+          quiz.currentQuestion = question;
+          console.log("Yielding next question:", question.text);
+          yield { type: "question", question };
+
+          const userAnswer = yield { type: "question", question };
+          totalQuestionsAsked++;
+
+          if (!userAnswer) {
+              console.error("No answer received from user");
+              continue;
+          }
+
+          console.log("User answered:", userAnswer);
+          const result = quiz.answerQuestion(userAnswer);
+          console.log("Answer result:", result);
+
+          yield { type: "feedback", ...result };
+
+          if (result.isCorrect) {
+              correctAnswers++;
+          }
+
+          console.log(`Correct Answers: ${correctAnswers} / 7`);
+
+          if (correctAnswers >= 7) {
+              console.log("Generator ending: Quiz Completed!");
+              yield { type: "completion", message: "Quiz Completed!" };
+              return;
+          }
+
+      } catch (error) {
+          console.error("Error in question generator:", error);
+          yield { type: "feedback", isCorrect: false, feedback: "An error occurred while processing your answer." };
       }
-
-      // Get and yield the next question
-      const question = quiz.getNextQuestion();
-      if (!question) {
-        console.log("No more questions available.");
-        return;
-      }
-
-      const userAnswer = yield question; // Wait for user input
-
-      if (!userAnswer) {
-        console.error("No answer received from user");
-        continue;
-      }
-
-      const result = quiz.answerQuestion(userAnswer);
-      yield result;
-
-      if (result.isCorrect) {
-        correctAnswers++; // Increment correct answer count
-      }
-
-
-      console.log(result.isCorrect ? "Correct answer!" : "Wrong answer!");
-
-    } catch (error) {
-      console.error("Error in question generator:", error);
-      yield { isCorrect: false, feedback: "An error occurred while processing your answer." };
-    }
   }
 }
+
 
 /**
  * Fetches new questions from the Open Trivia DB API and adds them to the quiz.
@@ -71,13 +120,11 @@ async function* fetchQuestions(quiz) {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     const data = await response.json();
     if (data.response_code !== 0) {
       throw new Error(`API Error: Response Code ${data.response_code}`);
     }
-
-    let fetchedQuestions = 0;
 
     for (let item of data.results) {
       const formattedQuestion = new Question(
@@ -88,14 +135,8 @@ async function* fetchQuestions(quiz) {
       );
 
       quiz.addQuestion(formattedQuestion);
-      fetchedQuestions++;
-      yield formattedQuestion; // Yield each fetched question
+      yield formattedQuestion;
     }
-
-    if (fetchedQuestions === 0) {
-      console.warn("No valid questions received from API.");
-    }
-
   } catch (error) {
     console.error("Error fetching questions:", error);
     throw new Error("Failed to fetch questions. Please try again.");
