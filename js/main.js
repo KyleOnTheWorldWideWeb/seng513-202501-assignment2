@@ -114,18 +114,25 @@ async function handleAnswer(choice, clickedButton, question) {
 
       const msg = document.createElement("p");
       msg.innerHTML = value.feedback;
-      msg.className = `feedback ${value.isCorrect ? "correct-feedback" : "incorrect-feedback"}`;
+      msg.className = `feedback ${
+        value.isCorrect ? "correct-feedback" : "incorrect-feedback"
+      }`;
       answerListElem.appendChild(msg);
 
+      console.log("Checking if `showNextButton()` is called...");
+
       if (!done) {
+        console.log("Calling showNextButton() after feedback!");
         showNextButton();
+      } else {
+        console.log("Generator finished. No more questions.");
       }
     } else if (value.type === "completion") {
       console.log("Generator says quiz is completed!");
       displayFinishedState();
     } else if (value.type === "question") {
       console.log("Generator yielded a new question:", value.question.text);
-      quiz.currentQuestion = value.question; // ✅ Ensure we hold onto the new question
+      quiz.currentQuestion = value.question;
       renderQuestion(value.question);
     } else {
       console.error("Generator yielded unexpected value:", value);
@@ -161,30 +168,43 @@ function highlightAnswers(isCorrect, question, clickedButton) {
  * Shows a "Next Question" button so the user can proceed.
  */
 function showNextButton() {
-  if (!nextButton) {
+  console.log(
+    "showNextButton() called - ensuring 'Next Question' button appears!"
+  );
+
+  let existingButton = document.querySelector(".next-button");
+
+  if (!existingButton) {
+    console.log("Creating new 'Next Question' button...");
     nextButton = document.createElement("button");
     nextButton.textContent = "Next Question";
     nextButton.className = "next-button";
+
     nextButton.addEventListener("click", async () => {
-      console.log("Next Question button clicked");
-
-      // Remove feedback message
-      const feedback = answerListElem.querySelector(".feedback");
-      if (feedback) feedback.remove();
-
-      // Re-enable all buttons
-      const buttons = answerListElem.querySelectorAll("button");
-      buttons.forEach((btn) => (btn.disabled = false));
-
-      // Hide next button
-      nextButton.style.display = "none";
-
-      // Display next question
+      console.log(
+        "Next Question button clicked - Calling displayNextQuestion()"
+      );
       await displayNextQuestion();
     });
+
     answerListElem.appendChild(nextButton);
+  } else {
+    console.log("'Next Question' button already exists.");
   }
-  nextButton.style.display = "block";
+
+  // Log button visibility and properties
+  existingButton = document.querySelector(".next-button");
+  if (existingButton) {
+    console.log("Button found in DOM:", existingButton);
+    console.log(
+      "Button display style:",
+      getComputedStyle(existingButton).display
+    );
+  } else {
+    console.log("Button is missing from the DOM!");
+  }
+
+  if (existingButton) existingButton.style.display = "block";
 }
 
 /**

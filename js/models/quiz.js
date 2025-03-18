@@ -9,11 +9,15 @@ export class Quiz {
   }
 
   difficultyAdjustment() {
-    let newDifficulty = this.score < 10 ? "easy" : this.score < 20 ? "medium" : "hard";
+    let newDifficulty =
+      this.score < 10 ? "easy" : this.score < 20 ? "medium" : "hard";
 
     this.difficulty = newDifficulty;
     if (/difficulty=\w+/.test(this.apiURL)) {
-      this.apiURL = this.apiURL.replace(/difficulty=\w+/, `difficulty=${newDifficulty}`);
+      this.apiURL = this.apiURL.replace(
+        /difficulty=\w+/,
+        `difficulty=${newDifficulty}`
+      );
     } else {
       this.apiURL += `&difficulty=${newDifficulty}`;
     }
@@ -28,42 +32,39 @@ export class Quiz {
 
   getNextQuestion() {
     if (this.questions.length === 0) {
-        console.error("No more questions available.");
-        return null;
+      console.error("No more questions available.");
+      return null;
     }
-
-    //ENSURE WE HOLD THE QUESTION BEFORE SHIFTING THE ARRAY
-    if (!this.currentQuestion) {
-        this.currentQuestion = this.questions[0];  // Hold reference to first question
-    }
-
+    this.currentQuestion = this.questions.pop(); // Hold reference to first question
     console.log("Next question set:", this.currentQuestion.text);
     return this.currentQuestion;
-}
-
-
-
-answerQuestion(choice) {
-  if (!this.currentQuestion) {
-      console.error("ERROR: Trying to answer but `this.currentQuestion` is null.");
-      return { isCorrect: false, feedback: "Error: No active question found. Please try again." };
   }
 
-  const isCorrect = choice === this.currentQuestion.answer;
-  const feedback = isCorrect
+  answerQuestion(choice) {
+    if (!this.currentQuestion) {
+      console.error(
+        "ERROR: Trying to answer but `this.currentQuestion` is null."
+      );
+      return {
+        isCorrect: false,
+        feedback: "Error: No active question found. Please try again.",
+      };
+    }
+
+    const isCorrect = choice === this.currentQuestion.answer;
+    const feedback = isCorrect
       ? "Correct answer!"
       : `Incorrect. The correct answer is ${this.currentQuestion.answer}.`;
 
-  if (isCorrect) {
+    if (isCorrect) {
       this.score++;
+    }
+
+    console.log(`${this.user.name} current score: ${this.score}`);
+
+    // DO NOT clear `this.currentQuestion` yet—let the generator handle it
+    return { isCorrect, feedback };
   }
-
-  console.log(`${this.user.name} current score: ${this.score}`);
-
-  // DO NOT clear `this.currentQuestion` yet—let the generator handle it
-  return { isCorrect, feedback };
-}
-
 
   finishQuiz() {
     this.user.insertScore(this.score);
