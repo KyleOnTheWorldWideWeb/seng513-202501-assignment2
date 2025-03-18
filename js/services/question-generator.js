@@ -1,4 +1,5 @@
-import { Quiz, Question } from '../models/quiz.js';
+import { Quiz } from '../models/quiz.js';
+import { Question } from '../models/question.js';
 
 /**
  * Generator function to manage the flow of quiz questions.

@@ -1,5 +1,6 @@
 import { User } from "./models/user.js";
-import { Quiz, Question } from "./models/quiz.js";
+import { Quiz } from "./models/quiz.js";
+import { Question } from "./models/question.js";
 import { questionGenerator } from "./services/question-generator.js";
 
 // Grab references to HTML elements (adjust IDs if needed)
@@ -230,18 +231,3 @@ const resetButton = document.createElement("button");
 resetButton.textContent = "Reset Quiz";
 resetButton.addEventListener("click", resetQuiz);
 document.body.appendChild(resetButton);
-
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
-}
-
-/**
- * Fetches new questions from the Open Trivia DB API and adds them to the quiz.
- * @param {Quiz} quiz - The quiz instance to store new questions.
- * @yields {Question} The next question from the API
- * @throws {Error} When API request fails or response is invalid
- */

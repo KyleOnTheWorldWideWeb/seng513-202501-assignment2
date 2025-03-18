@@ -44,6 +44,7 @@ export class Quiz {
     this.currentQuestion = this.questions.pop();
     return this.currentQuestion;
   }
+  
   // I think this will need to be changed. Currently it updates a users score
   // then returns false if the answer was wrong and true if it was correct.
   answerQuestion(choice) {
