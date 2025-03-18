@@ -118,6 +118,11 @@ async function handleAnswer(choice, clickedButton, question) {
       msg.className = `feedback ${value.isCorrect ? "correct-feedback" : "incorrect-feedback"}`;
       answerListElem.appendChild(msg);
 
+      // NEED TO ACTUALLY STORE THE SCORE
+      if (value.isCorrect) {
+        
+      }
+
       if (!done) {
         showNextButton();
       }

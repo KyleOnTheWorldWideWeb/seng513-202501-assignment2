@@ -9,8 +9,8 @@ export class Quiz {
   }
 
   difficultyAdjustment() {
-    let newDifficulty = this.score < 1 ? "easy" : this.score < 3 ? "medium" : "hard";
-
+    let newDifficulty = this.score < 3 ? "easy" : this.score < 4 ? "medium" : "hard";
+    console.log(`Current Difficulty: ${this.difficulty}, New Difficulty: ${newDifficulty}`);
     this.difficulty = newDifficulty;
     if (/difficulty=\w+/.test(this.apiURL)) {
       this.apiURL = this.apiURL.replace(/difficulty=\w+/, `difficulty=${newDifficulty}`);
@@ -57,7 +57,7 @@ answerQuestion(choice) {
   if (isCorrect) {
       this.score++;
       console.log("User answered correctly! The score is now:", this.score);
-      difficultyAdjustment();
+      this.difficultyAdjustment();
   }
 
   console.log(`${this.user.name} current score: ${this.score}`);
