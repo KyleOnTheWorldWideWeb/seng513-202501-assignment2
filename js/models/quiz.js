@@ -9,7 +9,7 @@ export class Quiz {
   }
 
   difficultyAdjustment() {
-    let newDifficulty = this.score < 3 ? "easy" : this.score < 4 ? "medium" : "hard";
+    let newDifficulty = this.score < 2 ? "easy" : this.score < 4 ? "medium" : "hard";
     console.log(`Current Difficulty: ${this.difficulty}, New Difficulty: ${newDifficulty}`);
     this.difficulty = newDifficulty;
     if (/difficulty=\w+/.test(this.apiURL)) {
@@ -17,7 +17,6 @@ export class Quiz {
     } else {
       this.apiURL += `&difficulty=${newDifficulty}`;
     }
-
     console.log(`Updated Difficulty: ${this.difficulty}`);
     console.log(`Updated API URL: ${this.apiURL}`);
   }
@@ -41,12 +40,22 @@ export class Quiz {
 //     return this.currentQuestion;
 // }
 
+// getNextQuestion() {
+//   if (this.questions.length === 0) {
+//     console.error("No more questions available.");
+//     return null;
+//   }
+//   this.currentQuestion = this.questions.pop(); // Hold reference to first question
+//   console.log("Next question set:", this.currentQuestion.text);
+//   return this.currentQuestion;
+// }
+
 getNextQuestion() {
   if (this.questions.length === 0) {
-    console.error("No more questions available.");
-    return null;
+      console.error("No more questions available.");
+      return null;
   }
-  this.currentQuestion = this.questions.pop(); // Hold reference to first question
+  this.currentQuestion = this.questions.shift();  // Removes the first question
   console.log("Next question set:", this.currentQuestion.text);
   return this.currentQuestion;
 }

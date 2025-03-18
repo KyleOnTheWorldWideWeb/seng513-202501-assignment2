@@ -9,105 +9,86 @@ import { Question } from '../models/question.js';
 export async function* questionGenerator(quiz) {
   let correctAnswers = 0;
   let totalQuestionsAsked = 0;
+  let prevDifficulty = quiz.difficulty; // Track difficulty across iterations
 
   console.log("Quiz started. Fetching questions...");
 
-  while (true) {  // Infinite loop, will exit only when needed
-      try {
-          console.log(`--- NEW LOOP ITERATION ---`);
-          console.log(`Current Correct Answers: ${correctAnswers}`);
+  while (true) {
+    try {
+      console.log("--- NEW LOOP ITERATION ---");
+      console.log(`Current Correct Answers: ${correctAnswers}`);
 
-          // Fetch new questions if needed
-          if (quiz.questions.length === 0) {
-              console.log(`Fetching new ${quiz.difficulty} questions...`);
-              
-              for await (const question of fetchQuestions(quiz)) {
-                  console.log("Yielding fetched question:", question.text);
-                  const userAnswer = yield { type: "question", question };
-                  totalQuestionsAsked++;
-
-                  if (!userAnswer) {
-                      console.error("No answer received from user");
-                      continue;
-                  }
-
-                  console.log("User answered:", userAnswer);
-                  const result = quiz.answerQuestion(userAnswer);
-                  console.log("Answer result:", result);
-
-                  yield { type: "feedback", ...result };
-
-                  if (result.isCorrect) {
-                      correctAnswers++;
-                  }
-
-                  console.log(`Correct Answers: ${correctAnswers} / 7`);
-
-                  if (correctAnswers >= 7) {
-                      console.log("Generator ending: Quiz Completed!");
-                      yield { type: "completion", message: "Quiz Completed!" };
-                      return;
-                  }
-              }
-          }
-
-          // Fetch next question
-          const question = quiz.getNextQuestion();
-          
-          if (!question) {
-            console.log("No more questions available, fetching more...");
-            yield { type: "feedback", isCorrect: false, feedback: "No more questions. Fetching more..." };
+      // If no questions are left or the difficulty has changed, we must fetch new ones
+      // The difficulty change is based on the user's score
+      // The URL is updated with the new difficulty level automatically in the Quiz class
+      // The URL retains the correct category but updates the difficulty
+      if (quiz.questions.length === 0 || prevDifficulty !== quiz.difficulty) {
+        console.log(`Fetching new questions with ${quiz.difficulty} difficulty`);
         
-            // Trigger new API fetch if questions run out
-            for await (const newQuestion of fetchQuestions(quiz)) {
-                console.log("Fetched new question:", newQuestion.text);
-                quiz.currentQuestion = newQuestion;
+        quiz.questions = [];          // Clear old questions
+        prevDifficulty = quiz.difficulty; // Store updated difficulty
 
-                yield { type: "question", question: newQuestion };
-                return; // SHOULD THIS BE CONTINUE INSTEAD OF RETURN?
-            }
+        let hasNewQuestions = false;  
 
-            console.log("No new questions fetched. Ending quiz.");
-            yield { type: "completion", message: "Quiz Completed!" };
-            return;
+        // Retrieve new questions asynchronously
+        for await (const question of fetchQuestions(quiz)) {
+          hasNewQuestions = true;
         }
 
-          quiz.currentQuestion = question;
-          console.log("Yielding next question:", question.text);
-          yield { type: "question", question };
-
-          const userAnswer = yield { type: "question", question };
-          totalQuestionsAsked++;
-
-          if (!userAnswer) {
-              console.error("No answer received from user");
-              continue;
-          }
-
-          console.log("User answered:", userAnswer);
-          const result = quiz.answerQuestion(userAnswer);
-          console.log("Answer result:", result);
-
-          yield { type: "feedback", ...result };
-
-          if (result.isCorrect) {
-              correctAnswers++;
-          }
-
-          console.log(`Correct Answers: ${correctAnswers} / 7`);
-
-          if (correctAnswers >= 7) {
-              console.log("Generator ending: Quiz Completed!");
-              yield { type: "completion", message: "Quiz Completed!" };
-              return;
-          }
-
-      } catch (error) {
-          console.error("Error in question generator:", error);
-          yield { type: "feedback", isCorrect: false, feedback: "An error occurred while processing your answer." };
+        if (!hasNewQuestions) {
+          console.error("No new questions fetched. Ending quiz.");
+          yield { type: "completion", message: "No more questions available." };
+          return;
+        }
       }
+
+      // Get the next question from the stored question list
+      const question = quiz.getNextQuestion();
+      if (!question) {
+        console.log("No more questions available after fetch. Ending quiz.");
+        yield { type: "completion", message: "Quiz Completed!" };
+        return;
+      }
+
+      quiz.currentQuestion = question;
+      console.log("Yielding next question:", question.text);
+
+      // MUST YIELD THE QUESTION ONLY ONCE
+      const userAnswer = yield { type: "question", question };
+      totalQuestionsAsked++;
+
+      if (!userAnswer) {
+        console.error("No answer received from user");
+        continue;
+      }
+
+      console.log("User answered:", userAnswer);
+      const result = quiz.answerQuestion(userAnswer);
+      console.log("Answer result:", result);
+      yield { type: "feedback", ...result };
+
+      if (result.isCorrect) {
+        correctAnswers++;
+      }
+
+      console.log(`Correct Answers: ${correctAnswers} / 7`);
+
+      if (correctAnswers >= 7) {
+        console.log("Generator ending: Quiz Completed!");
+        yield { type: "completion", message: "Quiz Completed!" };
+        return;
+      }
+
+      // Instead of ending the fetch loop, we need to go back and check if we need new questions or updated difficulty
+      continue;
+
+    } catch (error) {
+      console.error("Error in question generator:", error);
+      yield { type: "feedback", isCorrect: false, feedback: "An error occurred while processing your answer." };
+    }
   }
 }
+
 
 
 /**
