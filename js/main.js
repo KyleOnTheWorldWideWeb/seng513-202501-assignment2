@@ -4,36 +4,22 @@ import { Question } from "./models/question.js";
 import { questionGenerator } from "./services/question-generator.js";
 
 // Grab references to HTML elements (adjust IDs if needed)
-
 const questionElem = document.getElementById("question");
 const answerListElem = document.getElementById("answer-list");
 
 // We'll add a "Next Question" button to let the user see feedback first
 let nextButton = null;
-
-// We'll store the quizobject in a global variable so we can access it in multiple functions
 let quiz = null;
-
-// Global variable to track the quiz session
 let quizSession = false;
-
 let gen = null;
 
 export function startQuiz(user, categoryURL) {
   try {
-    // Create a new Quiz instance
     quiz = new Quiz(user, categoryURL);
-    // Create a generator to manage the flow of quiz questions
     gen = questionGenerator(quiz);
-
-    // Start the quiz
     quizSession = true;
     console.log("Quiz has started!");
-
-    // Display the first question
     displayNextQuestion();
-
-    //handling any sort of error
   } catch (error) {
     console.error("Error starting quiz:", error);
     questionElem.textContent = "Failed to start the quiz. Please try again.";
@@ -43,51 +29,52 @@ export function startQuiz(user, categoryURL) {
 
 /**
  * displayNextQuestion:
- *  - The generator's next yield is a question object
- *  - If done, quiz is finished
- *  - Otherwise, render it
+ * - The generator's next yield is a question object
+ * - If done, quiz is finished
+ * - Otherwise, render it
  */
 async function displayNextQuestion() {
-  const { value, done } = await gen.next();
+  try {
+    const { value, done } = await gen.next();
+    console.log("Received from generator:", value); // Log generator output
 
-  console.log("hello", value);
+    if (done || !value) {
+      questionElem.textContent = "No more questions!";
+      answerListElem.innerHTML = "";
+      return;
+    }
 
-  // If the generator is done or didn't yield a valid question
-  if (done || !value) {
-    questionElem.textContent = "No more questions!";
+    if (value.type === "question") {
+      console.log("Displaying new question:", value.question);
+      quiz.currentQuestion = value.question; // ✅ Explicitly assign the question
+      renderQuestion(value.question);
+    } else if (value.type === "feedback") {
+      console.log("Displaying feedback:", value);
+    } else {
+      console.error("Unexpected generator output:", value);
+    }
+  } catch (error) {
+    console.error("Error displaying next question:", error);
+    questionElem.textContent = "An error occurred. Please try again.";
     answerListElem.innerHTML = "";
-    return;
   }
-
-  // If the generator yields { question, isCorrect },
-  // we need to do renderQuestion(value.question) instead to show the
-  // correct answer, score, etc.
-  renderQuestion(value);
 }
 
 /**
  * Renders a question onto the page:
- *  - Displays the question text
- *  - Creates clickable buttons for each choice
+ * - Displays the question text
+ * - Creates clickable buttons for each choice
  */
 function renderQuestion(question) {
-  // Show question text with proper HTML entity rendering
   questionElem.innerHTML = question.text;
-
-  // Clear existing answers in the list
   answerListElem.innerHTML = "";
 
-  // Create a button for each choice
   question.choices.forEach((choice) => {
     const li = document.createElement("li");
     const btn = document.createElement("button");
-    // Use innerHTML to properly render HTML entities
     btn.innerHTML = choice;
     btn.setAttribute("data-answer", question.answer);
-
-    // On click, we pass the chosen answer to handleAnswer
     btn.addEventListener("click", () => handleAnswer(choice, btn, question));
-
     li.appendChild(btn);
     answerListElem.appendChild(li);
   });
@@ -95,73 +82,73 @@ function renderQuestion(question) {
 
 /**
  * Called when the user selects an answer:
- * 1. Disable all buttons to prevent multiple answers
- * 2. Resume the generator with user's choice -> gen.next(choice).
- * 3. The generator yields an object: { question, isCorrect, feedback }.
- * 4. We highlight buttons and show feedback.
+ * - Disables all buttons to prevent multiple answers
+ * - Resumes the generator with user's choice -> gen.next(choice)
+ * - Highlights correct/incorrect answers and shows feedback
  */
 async function handleAnswer(choice, clickedButton, question) {
-  console.log("Answer clicked:", choice);
-  
-  // Disable all buttons to prevent multiple answers
-  const buttons = answerListElem.querySelectorAll("button");
-  buttons.forEach(btn => btn.disabled = true);
-  
-  try {
-    // Resume generator to check correctness
-    const { value, done } = await gen.next(choice);
+  console.log("ANSWER CLICKED:", choice);
 
-    if (done) {
-      displayFinishedState();
-      return;
-    }
+  if (!quiz.currentQuestion) {
+    console.error("ERROR: `handleAnswer` called but no active question!");
+    return;
+  }
+
+  // Disable all buttons
+  const buttons = answerListElem.querySelectorAll("button");
+  buttons.forEach((btn) => (btn.disabled = true));
+
+  try {
+    console.log("Calling gen.next() with choice:", choice);
+    const { value, done } = await gen.next(choice);
+    console.log("Received from generator:", value, "Done:", done);
 
     if (!value) {
-      console.error("No feedback received from generator");
+      console.error("No feedback received from generator.");
       return;
     }
 
-    const { isCorrect, feedback } = value;
+    if (value.type === "feedback") {
+      console.log("Processing feedback:", value.feedback);
+      highlightAnswers(value.isCorrect, question, clickedButton);
 
-    // Highlight the correct / incorrect button(s)
-    highlightAnswers(isCorrect, question, clickedButton);
+      const msg = document.createElement("p");
+      msg.innerHTML = value.feedback;
+      msg.className = `feedback ${
+        value.isCorrect ? "correct-feedback" : "incorrect-feedback"
+      }`;
+      answerListElem.appendChild(msg);
 
-    // Remove any existing feedback message
-    const existingFeedback = answerListElem.querySelector(".feedback");
-    if (existingFeedback) {
-      existingFeedback.remove();
+      console.log("Checking if `showNextButton()` is called...");
+
+      if (!done) {
+        console.log("Calling showNextButton() after feedback!");
+        showNextButton();
+      } else {
+        console.log("Generator finished. No more questions.");
+      }
+    } else if (value.type === "completion") {
+      console.log("Generator says quiz is completed!");
+      displayFinishedState();
+    } else if (value.type === "question") {
+      console.log("Generator yielded a new question:", value.question.text);
+      quiz.currentQuestion = value.question;
+      renderQuestion(value.question);
+    } else {
+      console.error("Generator yielded unexpected value:", value);
     }
-
-    // Show feedback message with proper styling
-    const msg = document.createElement("p");
-    msg.innerHTML = feedback;
-    msg.className = `feedback ${isCorrect ? "correct-feedback" : "incorrect-feedback"}`;
-    msg.style.marginTop = "10px";
-    msg.style.padding = "10px";
-    msg.style.borderRadius = "5px";
-    msg.style.textAlign = "center";
-    msg.style.fontWeight = "bold";
-    answerListElem.appendChild(msg);
-
-    // Show the "Next Question" button
-    showNextButton();
   } catch (error) {
     console.error("Error handling answer:", error);
-    // Re-enable buttons in case of error
-    buttons.forEach(btn => btn.disabled = false);
+    buttons.forEach((btn) => (btn.disabled = false));
   }
 }
 
 /**
- * highlightAnswers:
- *  - If correct, apply .correct to the clicked button
- *  - If incorrect, apply .incorrect to the clicked button AND
- *    apply .correct to the button that actually has the question's correct answer
+ * Highlights correct and incorrect answers.
  */
 function highlightAnswers(isCorrect, question, clickedButton) {
-  // Remove any existing highlights
   const buttons = answerListElem.querySelectorAll("button");
-  buttons.forEach(btn => {
+  buttons.forEach((btn) => {
     btn.classList.remove("correct", "incorrect");
   });
 
@@ -169,8 +156,6 @@ function highlightAnswers(isCorrect, question, clickedButton) {
     clickedButton.classList.add("correct");
   } else {
     clickedButton.classList.add("incorrect");
-    
-    // Highlight the correct answer
     buttons.forEach((btn) => {
       if (btn.textContent === question.answer) {
         btn.classList.add("correct");
@@ -180,32 +165,46 @@ function highlightAnswers(isCorrect, question, clickedButton) {
 }
 
 /**
- * Shows a "Next Question" button so the user can proceed after seeing
- * feedback on their answer in the form of highlighted (red/green) answers.
+ * Shows a "Next Question" button so the user can proceed.
  */
 function showNextButton() {
-  if (!nextButton) {
+  console.log(
+    "showNextButton() called - ensuring 'Next Question' button appears!"
+  );
+
+  let existingButton = document.querySelector(".next-button");
+
+  if (!existingButton) {
+    console.log("Creating new 'Next Question' button...");
     nextButton = document.createElement("button");
     nextButton.textContent = "Next Question";
     nextButton.className = "next-button";
-    nextButton.addEventListener("click", () => {
-      // Remove feedback message
-      const feedback = answerListElem.querySelector(".feedback");
-      if (feedback) feedback.remove();
-      
-      // Re-enable all buttons
-      const buttons = answerListElem.querySelectorAll("button");
-      buttons.forEach(btn => btn.disabled = false);
-      
-      // Hide next button
-      nextButton.style.display = "none";
-      
-      // Display next question
-      displayNextQuestion();
+
+    nextButton.addEventListener("click", async () => {
+      console.log(
+        "Next Question button clicked - Calling displayNextQuestion()"
+      );
+      await displayNextQuestion();
     });
+
     answerListElem.appendChild(nextButton);
+  } else {
+    console.log("'Next Question' button already exists.");
   }
-  nextButton.style.display = "block";
+
+  // Log button visibility and properties
+  existingButton = document.querySelector(".next-button");
+  if (existingButton) {
+    console.log("Button found in DOM:", existingButton);
+    console.log(
+      "Button display style:",
+      getComputedStyle(existingButton).display
+    );
+  } else {
+    console.log("Button is missing from the DOM!");
+  }
+
+  if (existingButton) existingButton.style.display = "block";
 }
 
 /**
