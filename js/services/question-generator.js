@@ -2,41 +2,49 @@ import { Quiz, Question } from '../models/quiz.js';
 
 /**
  * Generator function to manage the flow of quiz questions.
- * It dynamically adjusts difficulty and retrieves new questions if needed.
+ * Dynamically adjusts difficulty and fetches new questions when needed.
  * @param {Quiz} quiz - The current quiz instance.
  */
 export async function* questionGenerator(quiz) {
   while (true) {
     try {
-      // Adjust the quiz difficulty based on score
+      // Adjust the quiz difficulty based on the score
       quiz.difficultyAdjustment();
 
-      // If there are no questions left, fetch new ones
+      // If no questions exist, fetch new ones
       if (quiz.questions.length === 0) {
         console.log(`Fetching new ${quiz.difficulty} questions...`);
-        yield* fetchQuestions(quiz);
+        
+        // Corrected: Await questions properly before proceeding
+        for await (const question of fetchQuestions(quiz)) {
+          yield question; // Yield each fetched question
+        }
+
+        if (quiz.questions.length === 0) {
+          console.log("Failed to fetch new questions.");
+          return; // Stop the generator if no questions were added
+        }
       }
 
-      // Get the next question
+      // Get and yield the next question
       const question = quiz.getNextQuestion();
       if (!question) {
         console.log("No more questions available.");
         return;
       }
 
-      // Yield the question and wait for answer
-      const userAnswer = yield question;
+      const userAnswer = yield question; // Wait for user input
 
       if (!userAnswer) {
         console.error("No answer received from user");
         continue;
       }
 
-      // Process the answer and yield the result
       const result = quiz.answerQuestion(userAnswer);
       yield result;
 
       console.log(result.isCorrect ? "Correct answer!" : "Wrong answer!");
+
     } catch (error) {
       console.error("Error in question generator:", error);
       yield { isCorrect: false, feedback: "An error occurred while processing your answer." };
@@ -59,7 +67,9 @@ async function* fetchQuestions(quiz) {
     if (data.response_code !== 0) {
       throw new Error(`API Error: Response Code ${data.response_code}`);
     }
-    
+
+    let fetchedQuestions = 0;
+
     for (let item of data.results) {
       const formattedQuestion = new Question(
         item.question,
@@ -67,10 +77,16 @@ async function* fetchQuestions(quiz) {
         item.correct_answer,
         quiz.difficulty
       );
-      
+
       quiz.addQuestion(formattedQuestion);
-      yield formattedQuestion;
+      fetchedQuestions++;
+      yield formattedQuestion; // Yield each fetched question
     }
+
+    if (fetchedQuestions === 0) {
+      console.warn("No valid questions received from API.");
+    }
+
   } catch (error) {
     console.error("Error fetching questions:", error);
     yield { error: true, message: "Failed to fetch questions. Please try again." };

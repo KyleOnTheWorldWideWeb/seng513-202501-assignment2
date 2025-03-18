@@ -38,11 +38,17 @@ export class Quiz {
   
   // TODO: Handle how we add questions in and when we want to end.
   getNextQuestion() {
-    if (this.questions.length === 0) {
+    if (!this.generator) {
+      console.warn("Question generator not initialized!");
       return null;
     }
-    this.currentQuestion = this.questions.pop();
-    return this.currentQuestion;
+
+    const next = this.generator.next();
+    if (next.done) {
+      return null;
+    }
+
+    return next.value;
   }
   // I think this will need to be changed. Currently it updates a users score
   // then returns false if the answer was wrong and true if it was correct.
