@@ -55,6 +55,9 @@ async function displayNextQuestion() {
       renderQuestion(value.question);
     } else if (value.type === "feedback") {
       console.log("Displaying feedback:", value);
+    } else if (value.type === "completion") {
+      console.log("The quiz is complete:", value.message);
+      displayFinishedState(); // or whatever end-of-quiz function you have
     } else {
       console.error("Unexpected generator output:", value);
     }
