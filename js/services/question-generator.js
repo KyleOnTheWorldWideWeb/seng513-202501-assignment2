@@ -1,4 +1,5 @@
-import { Quiz, Question } from '../models/quiz.js';
+import { Quiz } from '../models/quiz.js';
+import { Question } from '../models/question.js';
 
 /**
  * Generator function to manage the flow of quiz questions.
@@ -6,7 +7,10 @@ import { Quiz, Question } from '../models/quiz.js';
  * @param {Quiz} quiz - The current quiz instance.
  */
 export async function* questionGenerator(quiz) {
-  while (true) {
+
+  let correctAnswers = 0;
+
+  while (correctAnswers < 7) {
     try {
       // Adjust the quiz difficulty based on the score
       quiz.difficultyAdjustment();
@@ -42,6 +46,11 @@ export async function* questionGenerator(quiz) {
 
       const result = quiz.answerQuestion(userAnswer);
       yield result;
+
+      if (result.isCorrect) {
+        correctAnswers++; // Increment correct answer count
+      }
+
 
       console.log(result.isCorrect ? "Correct answer!" : "Wrong answer!");
 
@@ -89,7 +98,7 @@ async function* fetchQuestions(quiz) {
 
   } catch (error) {
     console.error("Error fetching questions:", error);
-    yield { error: true, message: "Failed to fetch questions. Please try again." };
+    throw new Error("Failed to fetch questions. Please try again.");
   }
 }
 

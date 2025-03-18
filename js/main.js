@@ -1,5 +1,6 @@
 import { User } from "./models/user.js";
-import { Quiz, Question } from "./models/quiz.js";
+import { Quiz } from "./models/quiz.js";
+import { Question } from "./models/question.js";
 import { questionGenerator } from "./services/question-generator.js";
 
 // Grab references to HTML elements (adjust IDs if needed)

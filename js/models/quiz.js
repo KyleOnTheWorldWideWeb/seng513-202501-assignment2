@@ -11,20 +11,15 @@ export class Quiz {
   }
 
   difficultyAdjustment() {
-    let newDifficulty;
-
-    if (this.score < 10) {
-      newDifficulty = "easy";
-    } else if (this.score >= 10 && this.score < 20) {
-      newDifficulty = "medium";
-    } else {
-      newDifficulty = "hard";
-    }
-    // Update the difficulty level of the quiz object
+    let newDifficulty = this.score < 10 ? "easy" : this.score < 20 ? "medium" : "hard";
+  
     this.difficulty = newDifficulty;
-    // Update the API URL with the new difficulty using regex
-    this.apiURL = this.apiURL.replace(/difficulty=\w+/, `difficulty=${newDifficulty}`);
-
+    if (/difficulty=\w+/.test(this.apiURL)) {
+      this.apiURL = this.apiURL.replace(/difficulty=\w+/, `difficulty=${newDifficulty}`);
+    } else {
+      this.apiURL += `&difficulty=${newDifficulty}`;
+    }
+  
     console.log(`Updated Difficulty: ${this.difficulty}`);
     console.log(`Updated API URL: ${this.apiURL}`);
   }
@@ -37,17 +32,17 @@ export class Quiz {
   }
   
   // TODO: Handle how we add questions in and when we want to end.
-  getNextQuestion() {
+  async getNextQuestion() {
     if (!this.generator) {
       console.warn("Question generator not initialized!");
       return null;
     }
-
-    const next = this.generator.next();
+  
+    const next = await this.generator.next();
     if (next.done) {
       return null;
     }
-
+  
     return next.value;
   }
   // I think this will need to be changed. Currently it updates a users score
@@ -58,7 +53,7 @@ export class Quiz {
     }
     
     const result = this.currentQuestion.checkAnswer(choice);
-    this.score += result.score;
+    this.score = Math.max(0, this.score + result.score);
     console.log(`${this.user.name} current score is: ${this.score}`);
     return result;
   }
