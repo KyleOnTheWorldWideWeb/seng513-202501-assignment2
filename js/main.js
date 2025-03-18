@@ -19,16 +19,11 @@ let quizSession = false;
 let gen = null;
 
 export function startQuiz(user, categoryURL) {
-  console.log(`Initializing quiz for ${user.name} with API: ${categoryURL}`);
-
   try {
     // Create a new Quiz instance
     quiz = new Quiz(user, categoryURL);
-
     // Create a generator to manage the flow of quiz questions
     gen = questionGenerator(quiz);
-
-    console.log(gen.question);
 
     // Start the quiz
     quizSession = true;
@@ -75,16 +70,8 @@ async function displayNextQuestion() {
  *  - Creates clickable buttons for each choice
  */
 function renderQuestion(question) {
-  // Decode HTML entities in the question text
-  const decodedText = question.text
-    .replace(/&quot;/g, '"')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&shy;/g, '-');
-
-  // Show question text
-  questionElem.textContent = decodedText;
+  // Show question text with proper HTML entity rendering
+  questionElem.innerHTML = question.text;
 
   // Clear existing answers in the list
   answerListElem.innerHTML = "";
@@ -93,14 +80,8 @@ function renderQuestion(question) {
   question.choices.forEach((choice) => {
     const li = document.createElement("li");
     const btn = document.createElement("button");
-    // Decode HTML entities in choices as well
-    btn.textContent = choice
-      .replace(/&quot;/g, '"')
-      .replace(/&amp;/g, '&')
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&shy;/g, '-');
-
+    // Use innerHTML to properly render HTML entities
+    btn.innerHTML = choice;
     btn.setAttribute("data-answer", question.answer);
 
     // On click, we pass the chosen answer to handleAnswer
@@ -144,10 +125,21 @@ async function handleAnswer(choice, clickedButton, question) {
     // Highlight the correct / incorrect button(s)
     highlightAnswers(isCorrect, question, clickedButton);
 
-    // Show feedback message
+    // Remove any existing feedback message
+    const existingFeedback = answerListElem.querySelector(".feedback");
+    if (existingFeedback) {
+      existingFeedback.remove();
+    }
+
+    // Show feedback message with proper styling
     const msg = document.createElement("p");
-    msg.textContent = feedback;
-    msg.className = isCorrect ? "feedback correct-feedback" : "feedback incorrect-feedback";
+    msg.innerHTML = feedback;
+    msg.className = `feedback ${isCorrect ? "correct-feedback" : "incorrect-feedback"}`;
+    msg.style.marginTop = "10px";
+    msg.style.padding = "10px";
+    msg.style.borderRadius = "5px";
+    msg.style.textAlign = "center";
+    msg.style.fontWeight = "bold";
     answerListElem.appendChild(msg);
 
     // Show the "Next Question" button
@@ -238,3 +230,18 @@ const resetButton = document.createElement("button");
 resetButton.textContent = "Reset Quiz";
 resetButton.addEventListener("click", resetQuiz);
 document.body.appendChild(resetButton);
+
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+/**
+ * Fetches new questions from the Open Trivia DB API and adds them to the quiz.
+ * @param {Quiz} quiz - The quiz instance to store new questions.
+ * @yields {Question} The next question from the API
+ * @throws {Error} When API request fails or response is invalid
+ */

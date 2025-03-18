@@ -40,8 +40,6 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
 
-        console.log(`Starting quiz for ${userName} in category: ${userSelectedCategoryURL}`);
-
         // Create User instance
         const user = new User(userName, []);
 
@@ -57,7 +55,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 function setQuizCategory(url) {
     userSelectedCategoryURL = url;
-    console.log("Selected Quiz API URL:", userSelectedCategoryURL);
+    
     // Display the selected category in the dropdown button
     document.getElementById("dropdown-button").textContent = document.querySelector(`a[data-url="${url}"]`).textContent;
     // Hide dropdown after selecting

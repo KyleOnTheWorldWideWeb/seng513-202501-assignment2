@@ -1,35 +1,3 @@
-export class Question {
-  constructor(text, choices, answer, difficulty) {
-    this.text = text;
-    this.choices = choices;
-    this.answer = answer;
-    this.difficulty = difficulty;
-  }
-  // We should consider using addEventListener for each question.
-  checkAnswer(choice) {
-    const isCorrect = choice === this.answer;
-    const feedback = isCorrect ? 
-      `Correct! Well done!` : 
-      `Incorrect. The correct answer was: ${this.answer}`;
-    
-    return {
-      isCorrect,
-      feedback,
-      score: isCorrect ? this.getScore() : -1
-    };
-  }
-  getScore() {
-    switch (this.difficulty) {
-      case "medium":
-        return 2;
-      case "hard":
-        return 3;
-      default:
-        return 1;
-    }
-  }
-}
-
 export class Quiz {
   constructor(user, apiURL) {
     // Users can select a category from the dropdown menu
@@ -39,6 +7,7 @@ export class Quiz {
     this.difficulty = "easy"; 
     this.questions = [];
     this.user = user;
+    this.currentQuestion = null;
   }
 
   difficultyAdjustment() {
@@ -68,25 +37,21 @@ export class Quiz {
   }
   
   // TODO: Handle how we add questions in and when we want to end.
-  retrieveQuestion() {
-    if (this.questions.length !== 0) {
-      const question = this.questions[this.questions.length - 1];
-      this.questions.pop(); 
-      return question;
-    } else {
+  getNextQuestion() {
+    if (this.questions.length === 0) {
       return null;
     }
+    this.currentQuestion = this.questions.pop();
+    return this.currentQuestion;
   }
   // I think this will need to be changed. Currently it updates a users score
   // then returns false if the answer was wrong and true if it was correct.
   answerQuestion(choice) {
-    const question = this.retrieveQuestion();
-    if (!question) {
-      console.log("No more questions available.");
+    if (!this.currentQuestion) {
       return { isCorrect: false, feedback: "Quiz completed" };
     }
     
-    const result = question.checkAnswer(choice);
+    const result = this.currentQuestion.checkAnswer(choice);
     this.score += result.score;
     console.log(`${this.user.name} current score is: ${this.score}`);
     return result;
@@ -97,6 +62,3 @@ export class Quiz {
     return this.score;
   }
 }
-
-
-

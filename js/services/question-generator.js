@@ -1,36 +1,30 @@
 import { Quiz, Question } from '../models/quiz.js';
 
-
 /**
  * Generator function to manage the flow of quiz questions.
  * It dynamically adjusts difficulty and retrieves new questions if needed.
  * @param {Quiz} quiz - The current quiz instance.
  */
-// Had to change it to async because otherwise <yield* fetchQuestions(quiz)> will 
-// trigger an "Uncaught TypeError".
 export async function* questionGenerator(quiz) {
   while (true) {
     try {
-      // Adjust the quiz difficulty (e.g., after each round or based on user performance).
+      // Adjust the quiz difficulty based on score
       quiz.difficultyAdjustment();
 
-      // If there are no questions left in the quiz object, fetch new ones from an API.
+      // If there are no questions left, fetch new ones
       if (quiz.questions.length === 0) {
         console.log(`Fetching new ${quiz.difficulty} questions...`);
-        // yield* delegates to another generator (fetchQuestions) to get new questions.
         yield* fetchQuestions(quiz);
       }
 
-      // Retrieve the next question from the quiz.
-      const question = quiz.retrieveQuestion();
-
-      // If no question is returned, assume we've exhausted all possibilities and exit the generator.
+      // Get the next question
+      const question = quiz.getNextQuestion();
       if (!question) {
         console.log("No more questions available.");
-        return; // Ends the generator.
+        return;
       }
 
-      // Yield the question to the caller, which can pause here until the user provides an answer.
+      // Yield the question and wait for answer
       const userAnswer = yield question;
 
       if (!userAnswer) {
@@ -38,13 +32,10 @@ export async function* questionGenerator(quiz) {
         continue;
       }
 
-      // Check whether the userAnswer is correct and get feedback
+      // Process the answer and yield the result
       const result = quiz.answerQuestion(userAnswer);
-
-      // Yield feedback so the UI knows what happened
       yield result;
 
-      // Log the result of the user's answer.
       console.log(result.isCorrect ? "Correct answer!" : "Wrong answer!");
     } catch (error) {
       console.error("Error in question generator:", error);
@@ -53,46 +44,48 @@ export async function* questionGenerator(quiz) {
   }
 }
 
-  /**
+/**
  * Fetches new questions from the Open Trivia DB API and adds them to the quiz.
- * Uses async/await since fetching data is asynchronous.
  * @param {Quiz} quiz - The quiz instance to store new questions.
  */
-
 async function* fetchQuestions(quiz) {
-    try {
-      // API endpoint with dynamic difficulty
-      //const apiUrl = `https://opentdb.com/api.php?amount=10`;
-
-      // ^^^ huh? There is no such thing in the API.
-      // We have to change the difficulty level manually by changing the URL.
-      // Which I have added to the Quiz object.
-       
-      
-      const response = await fetch(quiz.apiURL);
-      const data = await response.json();
-  
-      // Added error handling for API response codes
-      if (data.response_code !== 0) {
-        throw new Error(`API Error: Response Code ${data.response_code}`);
-      }
-      
-      for (let item of data.results) {
-        const formattedQuestion = new Question(
-          item.question,
-          [...item.incorrect_answers, item.correct_answer].sort(() => Math.random() - 0.5), // Shuffle choices
-          item.correct_answer,
-          quiz.difficulty
-        );
-  
-        
-        quiz.addQuestion(formattedQuestion);
-  
-        
-        yield formattedQuestion;
-        console.log("Question added to quiz: ", formattedQuestion);
-      }
-    } catch (error) {
-      console.error("Error fetching questions:", error);
+  try {
+    const response = await fetch(quiz.apiURL);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+    
+    const data = await response.json();
+    if (data.response_code !== 0) {
+      throw new Error(`API Error: Response Code ${data.response_code}`);
+    }
+    
+    for (let item of data.results) {
+      const formattedQuestion = new Question(
+        item.question,
+        shuffleArray([...item.incorrect_answers, item.correct_answer]),
+        item.correct_answer,
+        quiz.difficulty
+      );
+      
+      quiz.addQuestion(formattedQuestion);
+      yield formattedQuestion;
+    }
+  } catch (error) {
+    console.error("Error fetching questions:", error);
+    yield { error: true, message: "Failed to fetch questions. Please try again." };
   }
+}
+
+/**
+ * Shuffles an array using the Fisher-Yates algorithm
+ * @param {Array} array - The array to shuffle
+ * @returns {Array} The shuffled array
+ */
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
