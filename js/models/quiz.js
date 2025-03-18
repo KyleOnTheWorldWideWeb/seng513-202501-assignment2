@@ -9,7 +9,7 @@ export class Quiz {
   }
 
   difficultyAdjustment() {
-    let newDifficulty = this.score < 10 ? "easy" : this.score < 20 ? "medium" : "hard";
+    let newDifficulty = this.score < 1 ? "easy" : this.score < 3 ? "medium" : "hard";
 
     this.difficulty = newDifficulty;
     if (/difficulty=\w+/.test(this.apiURL)) {
@@ -56,6 +56,8 @@ answerQuestion(choice) {
 
   if (isCorrect) {
       this.score++;
+      console.log("User answered correctly! The score is now:", this.score);
+      difficultyAdjustment();
   }
 
   console.log(`${this.user.name} current score: ${this.score}`);

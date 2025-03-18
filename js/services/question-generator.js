@@ -64,7 +64,7 @@ export async function* questionGenerator(quiz) {
                 quiz.currentQuestion = newQuestion;
 
                 yield { type: "question", question: newQuestion };
-                return;
+                return; // SHOULD THIS BE CONTINUE INSTEAD OF RETURN?
             }
 
             console.log("No new questions fetched. Ending quiz.");
