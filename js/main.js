@@ -19,6 +19,11 @@ export function startQuiz(user, categoryURL) {
     gen = questionGenerator(quiz);
     quizSession = true;
     console.log("Quiz has started!");
+    quiz.score = 0; // Reset score when starting a new quiz
+    const scoreBox = document.getElementById("score-box");
+    if (scoreBox) {
+        scoreBox.textContent = "Score: 0";
+    }
     displayNextQuestion();
   } catch (error) {
     console.error("Error starting quiz:", error);
@@ -114,13 +119,13 @@ async function handleAnswer(choice, clickedButton, question) {
 
       const msg = document.createElement("p");
       msg.innerHTML = value.feedback;
-      console.log("Feedback message boolean:", value.isCorrect);
       msg.className = `feedback ${value.isCorrect ? "correct-feedback" : "incorrect-feedback"}`;
       answerListElem.appendChild(msg);
 
-      // NEED TO ACTUALLY STORE THE SCORE
+      
       if (value.isCorrect) {
-        
+      console.log(`User's score: ${quiz.score}`);
+      document.getElementById("score-box").textContent = `Score: ${quiz.score}`;
       }
 
       if (!done) {
@@ -210,6 +215,14 @@ function displayFinishedState() {
 }
 
 function resetQuiz() {
+  if (quiz) {
+    console.log("Resetting quiz...");
+    quiz.score = 0;  // Reset the score
+  }
+  const scoreBox = document.getElementById("score-box");
+  if (scoreBox) {
+      scoreBox.textContent = "Score: 0";
+  }
   quiz = null;
   quizSession = false;
   gen = null;

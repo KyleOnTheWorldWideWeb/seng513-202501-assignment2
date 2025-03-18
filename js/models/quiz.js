@@ -26,19 +26,29 @@ export class Quiz {
     this.questions.push(question);
   }
 
-  getNextQuestion() {
-    if (this.questions.length === 0) {
-        console.error("No more questions available.");
-        return null;
-    }
+//   getNextQuestion() {
+//     if (this.questions.length === 0) {
+//         console.error("No more questions available.");
+//         return null;
+//     }
 
-    //ENSURE WE HOLD THE QUESTION BEFORE SHIFTING THE ARRAY
-    if (!this.currentQuestion) {
-        this.currentQuestion = this.questions[0];  // Hold reference to first question
-    }
+//     //ENSURE WE HOLD THE QUESTION BEFORE SHIFTING THE ARRAY
+//     if (!this.currentQuestion) {
+//         this.currentQuestion = this.questions[0];  // Hold reference to first question
+//     }
 
-    console.log("Next question set:", this.currentQuestion.text);
-    return this.currentQuestion;
+//     console.log("Next question set:", this.currentQuestion.text);
+//     return this.currentQuestion;
+// }
+
+getNextQuestion() {
+  if (this.questions.length === 0) {
+    console.error("No more questions available.");
+    return null;
+  }
+  this.currentQuestion = this.questions.pop(); // Hold reference to first question
+  console.log("Next question set:", this.currentQuestion.text);
+  return this.currentQuestion;
 }
 
 
